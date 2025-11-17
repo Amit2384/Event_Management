@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Perform Check-in - {{ event.title }} - EventHub{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+        <a href="{% url 'checkin:checkin_dashboard' event.slug %}" class="text-blue-600 hover:text-blue-800 mb-2 inline-block">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+        </a>
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+            <i class="fas fa-qrcode mr-2"></i>Check-in Attendee
+        </h1>
+        <p class="text-gray-600">{{ event.title }}</p>
+    </div>
+    
+    <!-- Check-in Form -->
+    <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+        <div class="mb-6 text-center">
+            <div class="inline-block bg-blue-100 p-4 rounded-full mb-4">
+                <i class="fas fa-qrcode text-blue-600 text-5xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Scan Ticket or Enter Manually</h2>
+            <p class="text-gray-600">Scan the attendee's QR code or type the ticket number</p>
+        </div>
+        
+        <form method="post" id="checkin-form" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Ticket Number Input -->
+            <div>
+                <label for="{{ form.ticket_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-ticket-alt mr-1"></i>Ticket Number or QR Code Data
+                </label>
+                {{ form.ticket_number }}
+                <p class="text-gray-500 text-sm mt-1">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    The ticket number will be automatically filled if you scan the QR code
+                </p>
+                {% if form.ticket_number.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.ticket_number.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Notes (Optional) -->
+            <div>
+                <label for="{{ form.notes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-comment mr-1"></i>Check-in Notes (Optional)
+                </label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.notes.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="flex space-x-4">
+                <button type="submit" class="flex-1 bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition text-lg font-semibold">
+                    <i class="fas fa-check-circle mr-2"></i>Check In
+                </button>
+                <button type="button" onclick="clearForm()" class="px-6 py-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    <i class="fas fa-redo mr-2"></i>Clear
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Instructions -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 class="text-lg font-bold text-blue-900 mb-3">
+            <i class="fas fa-info-circle mr-2"></i>Check-in Instructions
+        </h3>
+        <ul class="space-y-2 text-blue-800 text-sm">
+            <li class="flex items-start">
+                <i class="fas fa-check text-blue-600 mt-1 mr-2"></i>
+                <span><strong>Scan QR Code:</strong> Ask the attendee to show their ticket QR code and scan it using a QR scanner</span>
+            </li>
+            <li class="flex items-start">
+                <i class="fas fa-check text-blue-600 mt-1 mr-2"></i>
+                <span><strong>Manual Entry:</strong> If scanning fails, manually type the ticket number from their ticket</span>
+            </li>
+            <li class="flex items-start">
+                <i class="fas fa-check text-blue-600 mt-1 mr-2"></i>
+                <span><strong>Verification:</strong> The system will automatically verify the ticket and mark the attendee as checked in</span>
+            </li>
+            <li class="flex items-start">
+                <i class="fas fa-check text-blue-600 mt-1 mr-2"></i>
+                <span><strong>Duplicate Check:</strong> If an attendee is already checked in, you'll receive a notification</span>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Keyboard Shortcuts Info -->
+    <div class="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <p class="text-gray-700 text-sm">
+            <i class="fas fa-keyboard mr-2"></i>
+            <strong>Tip:</strong> Press <kbd class="px-2 py-1 bg-white border rounded text-xs">Enter</kbd> to quickly check in after entering the ticket number
+        </p>
+    </div>
+</div>
+
+<script>
+function clearForm() {
+    document.getElementById('checkin-form').reset();
+    document.getElementById('{{ form.ticket_number.id_for_label }}').focus();
+}
+
+// Auto-focus on ticket number field
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('{{ form.ticket_number.id_for_label }}').focus();
+});
+
+// Auto-submit on Enter key
+document.getElementById('{{ form.ticket_number.id_for_label }}').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('checkin-form').submit();
+    }
+});
+</script>
+{% endblock %}

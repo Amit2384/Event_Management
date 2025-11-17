@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}My Events - EventHub{% endblock %}
+
+{% block content %}
+<div>
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-4xl font-bold text-gray-800">
+                <i class="fas fa-calendar-check mr-2"></i>My Events
+            </h1>
+            <p class="text-gray-600 mt-2">Manage all your organized events</p>
+        </div>
+        <a href="{% url 'events:event_create' %}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+            <i class="fas fa-plus-circle mr-2"></i>Create New Event
+        </a>
+    </div>
+    
+    <!-- Events List -->
+    {% if page_obj %}
+    <div class="space-y-4">
+        {% for event in page_obj %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+            <div class="md:flex">
+                <!-- Event Image -->
+                <div class="md:w-1/4">
+                    {% if event.banner_image %}
+                    <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="w-full h-48 md:h-full object-cover">
+                    {% else %}
+                    <div class="w-full h-48 md:h-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
+                        <i class="fas fa-calendar-alt text-white text-5xl"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Event Details -->
+                <div class="p-6 md:w-3/4">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <!-- Badges -->
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="bg-{% if event.status == 'published' %}green{% elif event.status == 'draft' %}yellow{% elif event.status == 'cancelled' %}red{% else %}gray{% endif %}-100 text-{% if event.status == 'published' %}green{% elif event.status == 'draft' %}yellow{% elif event.status == 'cancelled' %}red{% else %}gray{% endif %}-800 text-xs px-3 py-1 rounded-full font-semibold">
+                                    {{ event.get_status_display }}
+                                </span>
+                                
+                                {% if event.category %}
+                                <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+                                    {{ event.category.name }}
+                                </span>
+                                {% endif %}
+                                
+                                <span class="{% if event.event_type == 'free' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %} text-xs px-3 py-1 rounded-full">
+                                    {{ event.get_event_type_display }}
+                                </span>
+                            </div>
+                            
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                                <a href="{% url 'events:event_detail' event.slug %}" class="hover:text-blue-600">
+                                    {{ event.title }}
+                                </a>
+                            </h2>
+                            
+                            <div class="space-y-1 text-sm text-gray-600 mb-4">
+                                <p><i class="fas fa-calendar mr-2"></i>{{ event.start_date|date:"F d, Y at h:i A" }}</p>
+                                <p><i class="fas fa-map-marker-alt mr-2"></i>{{ event.venue_name }}, {{ event.city }}</p>
+                            </div>
+                            
+                            <!-- Stats -->
+                            <div class="grid grid-cols-3 gap-4 mb-4">
+                                <div class="bg-blue-50 p-3 rounded-lg">
+                                    <p class="text-xs text-gray-600">Registrations</p>
+                                    <p class="text-xl font-bold text-blue-600">{{ event.get_booked_seats }}</p>
+                                </div>
+                                <div class="bg-green-50 p-3 rounded-lg">
+                                    <p class="text-xs text-gray-600">Available</p>
+                                    <p class="text-xl font-bold text-green-600">{{ event.available_seats }}</p>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <p class="text-xs text-gray-600">Total Seats</p>
+                                    <p class="text-xl font-bold text-gray-600">{{ event.total_seats }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Progress Bar -->
+                            <div class="mb-2">
+                                <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                    <span>Booking Progress</span>
+                                    <span class="font-semibold">{{ event.get_booking_percentage|floatformat:0 }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: '{{ event.get_booking_percentage|floatformat:0 }}%'"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="ml-4 flex flex-col space-y-2">
+                            <a href="{% url 'events:event_detail' event.slug %}" class="px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition text-sm whitespace-nowrap">
+                                <i class="fas fa-eye mr-1"></i>View
+                            </a>
+                            <a href="{% url 'events:event_update' event.slug %}" class="px-4 py-2 bg-yellow-500 text-white text-center rounded-lg hover:bg-yellow-600 transition text-sm whitespace-nowrap">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </a>
+                            <a href="{% url 'rsvp:event_attendees' event.slug %}" class="px-4 py-2 bg-green-600 text-white text-center rounded-lg hover:bg-green-700 transition text-sm whitespace-nowrap">
+                                <i class="fas fa-users mr-1"></i>Attendees
+                            </a>
+                            <a href="{% url 'checkin:checkin_dashboard' event.slug %}" class="px-4 py-2 bg-purple-600 text-white text-center rounded-lg hover:bg-purple-700 transition text-sm whitespace-nowrap">
+                                <i class="fas fa-check-circle mr-1"></i>Check-in
+                            </a>
+                            <a href="{% url 'events:event_delete' event.slug %}" class="px-4 py-2 bg-red-600 text-white text-center rounded-lg hover:bg-red-700 transition text-sm whitespace-nowrap">
+                                <i class="fas fa-trash mr-1"></i>Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="mt-8 flex justify-center">
+        <nav class="flex space-x-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                <i class="fas fa-chevron-left"></i> Previous
+            </a>
+            {% endif %}
+            
+            <span class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                Next <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- No Events -->
+    <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+        <i class="fas fa-calendar-times text-gray-400 text-6xl mb-4"></i>
+        <h3 class="text-2xl font-bold text-gray-800 mb-2">No Events Yet</h3>
+        <p class="text-gray-600 mb-6">Start creating events and grow your audience</p>
+        <a href="{% url 'events:event_create' %}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+            <i class="fas fa-plus-circle mr-2"></i>Create Your First Event
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

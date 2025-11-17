@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - EventHub{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">
+                <i class="fas fa-calendar-plus mr-2"></i>{{ title }}
+            </h1>
+            <p class="text-gray-600 mt-2">Fill in the details to create your event</p>
+        </div>
+        
+        <!-- Form -->
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Basic Information -->
+            <div class="border-b pb-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-info-circle mr-2"></i>Basic Information
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Event Title *</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.title.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.description.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {% comment %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ form.category.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        {% endcomment %}
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Event Type *</label>
+                            {{ form.event_type }}
+                            {% if form.event_type.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ form.event_type.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ form.status.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Banner Image</label>
+                        {{ form.banner_image }}
+                        <p class="text-gray-500 text-xs mt-1">Recommended size: 1200x600px</p>
+                        {% if form.banner_image.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.banner_image.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Date & Time -->
+            <div class="border-b pb-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-clock mr-2"></i>Date & Time
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Date & Time *</label>
+                        {{ form.start_date }}
+                        {% if form.start_date.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.start_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">End Date & Time *</label>
+                        {{ form.end_date }}
+                        {% if form.end_date.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.end_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Location -->
+            <div class="border-b pb-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-map-marker-alt mr-2"></i>Location
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Venue Name *</label>
+                        {{ form.venue_name }}
+                        {% if form.venue_name.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.venue_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Venue Address *</label>
+                        {{ form.venue_address }}
+                        {% if form.venue_address.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.venue_address.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                            {{ form.city }}
+                            {% if form.city.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ form.city.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">State *</label>
+                            {{ form.state }}
+                            {% if form.state.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ form.state.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Country *</label>
+                            {{ form.country }}
+                            {% if form.country.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ form.country.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ZIP Code *</label>
+                            {{ form.zip_code }}
+                            {% if form.zip_code.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ form.zip_code.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Capacity & Pricing -->
+            <div>
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-users mr-2"></i>Capacity & Pricing
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Total Seats *</label>
+                        {{ form.total_seats }}
+                        <p class="text-gray-500 text-xs mt-1">Maximum number of attendees</p>
+                        {% if form.total_seats.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.total_seats.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ticket Price *</label>
+                        {{ form.ticket_price }}
+                        <p class="text-gray-500 text-xs mt-1">Enter 0.00 for free events</p>
+                        {% if form.ticket_price.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.ticket_price.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Non-field Errors -->
+            {% if form.non_field_errors %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+            
+            <!-- Submit Buttons -->
+            <div class="flex justify-end space-x-4 pt-6">
+                <a href="{% if event %}{% url 'events:event_detail' event.slug %}{% else %}{% url 'events:my_events' %}{% endif %}" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </a>
+                <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-save mr-2"></i>{{ button_text }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

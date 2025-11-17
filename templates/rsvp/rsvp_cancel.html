@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancel Registration - EventHub{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <!-- Warning Icon -->
+        <div class="text-center mb-6">
+            <i class="fas fa-exclamation-triangle text-yellow-600 text-6xl mb-4"></i>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Cancel Registration</h1>
+            <p class="text-gray-600">Are you sure you want to cancel your registration?</p>
+        </div>
+        
+        <!-- Event Info -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">{{ rsvp.event.title }}</h2>
+            <div class="space-y-2 text-sm text-gray-600">
+                <p><i class="fas fa-calendar mr-2"></i>{{ rsvp.event.start_date|date:"F d, Y at h:i A" }}</p>
+                <p><i class="fas fa-map-marker-alt mr-2"></i>{{ rsvp.event.venue_name }}, {{ rsvp.event.city }}</p>
+                <p><i class="fas fa-ticket-alt mr-2"></i>Ticket Number: <strong>{{ rsvp.ticket_number }}</strong></p>
+                <p><i class="fas fa-users mr-2"></i>Number of Tickets: <strong>{{ rsvp.number_of_tickets }}</strong></p>
+            </div>
+        </div>
+        
+        <!-- Warning Message -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <p class="text-yellow-800 font-semibold mb-2">
+                <i class="fas fa-info-circle mr-2"></i>What happens when you cancel:
+            </p>
+            <ul class="text-yellow-700 text-sm space-y-1 ml-6 list-disc">
+                <li>Your registration will be cancelled immediately</li>
+                <li>Your ticket will become invalid</li>
+                <li>{{ rsvp.number_of_tickets }} seat(s) will be released for others</li>
+                <li>You can register again if seats are available</li>
+                <li>You will receive a cancellation confirmation email</li>
+            </ul>
+        </div>
+        
+        <!-- Confirmation Form -->
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'rsvp:my_rsvps' %}" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    <i class="fas fa-arrow-left mr-2"></i>Keep Registration
+                </a>
+                <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                    <i class="fas fa-times-circle mr-2"></i>Yes, Cancel Registration
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

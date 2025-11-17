@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+
+{% block title %}My Registrations - EventHub{% endblock %}
+
+{% block content %}
+<div>
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+            <i class="fas fa-ticket-alt mr-2"></i>My Registrations
+        </h1>
+        <p class="text-gray-600">View and manage all your event registrations</p>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-blue-100 p-3 rounded-lg">
+                    <i class="fas fa-calendar-check text-blue-600 text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-gray-600 text-sm">Upcoming Events</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ total_upcoming }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-green-100 p-3 rounded-lg">
+                    <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-gray-600 text-sm">Attended</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ total_attended }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center">
+                <div class="bg-purple-100 p-3 rounded-lg">
+                    <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-gray-600 text-sm">Total Events</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ upcoming_rsvps.count|add:past_rsvps.count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabs -->
+    <div class="mb-6">
+        <div class="border-b border-gray-200">
+            <nav class="flex space-x-8">
+                <button onclick="showTab('upcoming')" id="upcoming-tab" class="tab-button py-4 px-1 border-b-2 border-blue-600 font-medium text-sm text-blue-600">
+                    <i class="fas fa-calendar-day mr-2"></i>Upcoming ({{ upcoming_rsvps.count }})
+                </button>
+                <button onclick="showTab('past')" id="past-tab" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    <i class="fas fa-history mr-2"></i>Past ({{ past_rsvps.count }})
+                </button>
+                <button onclick="showTab('cancelled')" id="cancelled-tab" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    <i class="fas fa-times-circle mr-2"></i>Cancelled ({{ cancelled_rsvps.count }})
+                </button>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Upcoming Events Tab -->
+    <div id="upcoming-content" class="tab-content">
+        {% if upcoming_rsvps %}
+        <div class="space-y-4">
+            {% for rsvp in upcoming_rsvps %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+                <div class="md:flex">
+                    <!-- Event Image -->
+                    <div class="md:w-1/4">
+                        {% if rsvp.event.banner_image %}
+                        <img src="{{ rsvp.event.banner_image.url }}" alt="{{ rsvp.event.title }}" class="w-full h-48 md:h-full object-cover">
+                        {% else %}
+                        <div class="w-full h-48 md:h-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
+                            <i class="fas fa-calendar-alt text-white text-5xl"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Event Details -->
+                    <div class="p-6 md:w-3/4">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <!-- Status Badge -->
+                                <span class="inline-block bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-semibold mb-3">
+                                    <i class="fas fa-check-circle mr-1"></i>{{ rsvp.get_status_display }}
+                                </span>
+                                
+                                <!-- Event Title -->
+                                <h3 class="text-2xl font-bold text-gray-800 mb-2">
+                                    <a href="{% url 'events:event_detail' rsvp.event.slug %}" class="hover:text-blue-600">
+                                        {{ rsvp.event.title }}
+                                    </a>
+                                </h3>
+                                
+                                <!-- Event Info -->
+                                <div class="space-y-2 text-sm text-gray-600 mb-4">
+                                    <p>
+                                        <i class="fas fa-calendar mr-2"></i>
+                                        <strong>Date:</strong> {{ rsvp.event.start_date|date:"F d, Y" }}
+                                    </p>
+                                    <p>
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <strong>Time:</strong> {{ rsvp.event.start_date|date:"h:i A" }}
+                                    </p>
+                                    <p>
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        <strong>Location:</strong> {{ rsvp.event.venue_name }}, {{ rsvp.event.city }}
+                                    </p>
+                                    <p>
+                                        <i class="fas fa-ticket-alt mr-2"></i>
+                                        <strong>Ticket Number:</strong> <code class="bg-gray-100 px-2 py-1 rounded">{{ rsvp.ticket_number }}</code>
+                                    </p>
+                                    <p>
+                                        <i class="fas fa-users mr-2"></i>
+                                        <strong>Tickets:</strong> {{ rsvp.number_of_tickets }}
+                                    </p>
+                                </div>
+                                
+                                <!-- Countdown (Days Until Event) -->
+                                <div class="bg-blue-50 inline-block px-4 py-2 rounded-lg">
+                                    <p class="text-blue-800 text-sm font-semibold">
+                                        <i class="fas fa-hourglass-half mr-1"></i>
+                                        Event in {{ rsvp.event.start_date|timeuntil }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="ml-4 flex flex-col space-y-2">
+                                <a href="{% url 'rsvp:rsvp_detail' rsvp.id %}" class="px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition text-sm whitespace-nowrap">
+                                    <i class="fas fa-ticket-alt mr-1"></i>View Ticket
+                                </a>
+                                <a href="{% url 'rsvp:download_ticket' rsvp.id %}" class="px-4 py-2 bg-green-600 text-white text-center rounded-lg hover:bg-green-700 transition text-sm whitespace-nowrap">
+                                    <i class="fas fa-download mr-1"></i>Download
+                                </a>
+                                <a href="{% url 'events:event_detail' rsvp.event.slug %}" class="px-4 py-2 bg-gray-600 text-white text-center rounded-lg hover:bg-gray-700 transition text-sm whitespace-nowrap">
+                                    <i class="fas fa-info-circle mr-1"></i>Event Info
+                                </a>
+                                <a href="{% url 'rsvp:cancel_rsvp' rsvp.id %}" class="px-4 py-2 bg-red-600 text-white text-center rounded-lg hover:bg-red-700 transition text-sm whitespace-nowrap">
+                                    <i class="fas fa-times-circle mr-1"></i>Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+            <i class="fas fa-calendar-times text-gray-400 text-6xl mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">No Upcoming Events</h3>
+            <p class="text-gray-600 mb-6">You haven't registered for any upcoming events yet</p>
+            <a href="{% url 'events:event_list' %}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-search mr-2"></i>Browse Events
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Past Events Tab -->
+    <div id="past-content" class="tab-content hidden">
+        {% if past_rsvps %}
+        <div class="space-y-4">
+            {% for rsvp in past_rsvps %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+                <div class="md:flex">
+                    <!-- Event Image -->
+                    <div class="md:w-1/4">
+                        {% if rsvp.event.banner_image %}
+                        <img src="{{ rsvp.event.banner_image.url }}" alt="{{ rsvp.event.title }}" class="w-full h-48 md:h-full object-cover opacity-75">
+                        {% else %}
+                        <div class="w-full h-48 md:h-full bg-gradient-to-r from-gray-400 to-gray-600 flex items-center justify-center">
+                            <i class="fas fa-calendar-alt text-white text-5xl"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Event Details -->
+                    <div class="p-6 md:w-3/4">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <!-- Status Badge -->
+                                <span class="inline-block bg-{% if rsvp.status == 'attended' %}blue{% else %}gray{% endif %}-100 text-{% if rsvp.status == 'attended' %}blue{% else %}gray{% endif %}-800 text-xs px-3 py-1 rounded-full font-semibold mb-3">
+                                    {% if rsvp.status == 'attended' %}
+                                    <i class="fas fa-check-double mr-1"></i>Attended
+                                    {% else %}
+                                    <i class="fas fa-clock mr-1"></i>{{ rsvp.get_status_display }}
+                                    {% endif %}
+                                </span>
+                                
+                                <!-- Event Title -->
+                                <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ rsvp.event.title }}</h3>
+                                
+                                <!-- Event Info -->
+                                <div class="space-y-2 text-sm text-gray-600 mb-4">
+                                    <p>
+                                        <i class="fas fa-calendar mr-2"></i>
+                                        <strong>Date:</strong> {{ rsvp.event.start_date|date:"F d, Y" }}
+                                    </p>
+                                    <p>
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        <strong>Location:</strong> {{ rsvp.event.venue_name }}, {{ rsvp.event.city }}
+                                    </p>
+                                    <p>
+                                        <i class="fas fa-ticket-alt mr-2"></i>
+                                        <strong>Ticket Number:</strong> <code class="bg-gray-100 px-2 py-1 rounded">{{ rsvp.ticket_number }}</code>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="ml-4 flex flex-col space-y-2">
+                                <a href="{% url 'rsvp:rsvp_detail' rsvp.id %}" class="px-4 py-2 bg-gray-600 text-white text-center rounded-lg hover:bg-gray-700 transition text-sm whitespace-nowrap">
+                                    <i class="fas fa-ticket-alt mr-1"></i>View Ticket
+                                </a>
+                                <a href="{% url 'events:event_detail' rsvp.event.slug %}" class="px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition text-sm whitespace-nowrap">
+                                    <i class="fas fa-info-circle mr-1"></i>Event Info
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+            <i class="fas fa-history text-gray-400 text-6xl mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">No Past Events</h3>
+            <p class="text-gray-600">You haven't attended any events yet</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Cancelled Events Tab -->
+    <div id="cancelled-content" class="tab-content hidden">
+        {% if cancelled_rsvps %}
+        <div class="space-y-4">
+            {% for rsvp in cancelled_rsvps %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="md:flex">
+                    <!-- Event Image -->
+                    <div class="md:w-1/4">
+                        {% if rsvp.event.banner_image %}
+                        <img src="{{ rsvp.event.banner_image.url }}" alt="{{ rsvp.event.title }}" class="w-full h-48 md:h-full object-cover opacity-50">
+                        {% else %}
+                        <div class="w-full h-48 md:h-full bg-gradient-to-r from-red-400 to-red-600 flex items-center justify-center opacity-50">
+                            <i class="fas fa-calendar-alt text-white text-5xl"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Event Details -->
+                    <div class="p-6 md:w-3/4">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <!-- Status Badge -->
+                                <span class="inline-block bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full font-semibold mb-3">
+                                    <i class="fas fa-times-circle mr-1"></i>Cancelled
+                                </span>
+                                
+                                <!-- Event Title -->
+                                <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ rsvp.event.title }}</h3>
+                                
+                                <!-- Event Info -->
+                                <div class="space-y-2 text-sm text-gray-600 mb-4">
+                                    <p>
+                                        <i class="fas fa-calendar mr-2"></i>
+                                        <strong>Date:</strong> {{ rsvp.event.start_date|date:"F d, Y" }}
+                                    </p>
+                                    <p>
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        <strong>Location:</strong> {{ rsvp.event.venue_name }}, {{ rsvp.event.city }}
+                                    </p>
+                                    <p>
+                                        <i class="fas fa-calendar-times mr-2"></i>
+                                        <strong>Cancelled On:</strong> {{ rsvp.updated_at|date:"F d, Y" }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Button -->
+                            <div class="ml-4">
+                                {% if rsvp.event.available_seats > 0 and rsvp.event.status == 'published' %}
+                                <a href="{% url 'rsvp:create_rsvp' rsvp.event.slug %}" class="px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition text-sm whitespace-nowrap">
+                                    <i class="fas fa-redo mr-1"></i>Register Again
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+            <i class="fas fa-check-circle text-green-400 text-6xl mb-4"></i>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">No Cancelled Registrations</h3>
+            <p class="text-gray-600">You haven't cancelled any event registrations</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function showTab(tabName) {
+    // Hide all tab contents
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(content => content.classList.add('hidden'));
+    
+    // Remove active state from all tabs
+    const tabs = document.querySelectorAll('.tab-button');
+    tabs.forEach(tab => {
+        tab.classList.remove('border-blue-600', 'text-blue-600');
+        tab.classList.add('border-transparent', 'text-gray-500');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabName + '-content').classList.remove('hidden');
+    
+    // Add active state to selected tab
+    const activeTab = document.getElementById(tabName + '-tab');
+    activeTab.classList.remove('border-transparent', 'text-gray-500');
+    activeTab.classList.add('border-blue-600', 'text-blue-600');
+}
+</script>
+{% endblock %}

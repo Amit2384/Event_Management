@@ -1,0 +1,89 @@
+<nav class="bg-blue-600 text-white shadow-lg sticky top-0 z-50">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between py-4">
+            <!-- Logo -->
+            <div>
+                <a href="{% url 'dashboard:home' %}" class="text-2xl font-bold flex items-center">
+                    <i class="fas fa-calendar-alt mr-2"></i>EventHub
+                </a>
+            </div>
+
+            <!-- Main Menu -->
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="{% url 'events:event_list' %}" class="hover:text-blue-200 transition">
+                    <i class="fas fa-calendar mr-1"></i>Events
+                </a>
+                <a href="{% url 'search:search' %}" class="hover:text-blue-200 transition">
+                    <i class="fas fa-search mr-1"></i>Search
+                </a>
+
+                {% if user.is_authenticated %}
+                    {% if user.profile.user_type == 'organizer' %}
+                        <a href="{% url 'events:event_create' %}" class="hover:text-blue-200 transition">
+                            <i class="fas fa-plus-circle mr-1"></i>Create Event
+                        </a>
+                        <a href="{% url 'events:my_events' %}" class="hover:text-blue-200 transition">
+                            <i class="fas fa-clipboard-list mr-1"></i>My Events
+                        </a>
+                    {% else %}
+                        <a href="{% url 'rsvp:my_rsvps' %}" class="hover:text-blue-200 transition">
+                            <i class="fas fa-ticket-alt mr-1"></i>My Tickets
+                        </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'dashboard:home' %}" class="hover:text-blue-200 transition">
+                        <i class="fas fa-tachometer-alt mr-1"></i>Dashboard
+                    </a>
+
+                    <!-- User Dropdown -->
+                    <div class="relative group">
+                        <button class="flex items-center hover:text-blue-200 transition">
+                            <i class="fas fa-user-circle mr-1"></i>
+                            {{ user.username }} <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div class="absolute right-0 hidden group-hover:block bg-white text-gray-800 mt-2 rounded-lg shadow-lg w-48 z-50">
+                            <a href="{% url 'authentication:profile' %}" class="block px-4 py-2 hover:bg-gray-100">
+                                <i class="fas fa-user mr-2"></i>Profile
+                            </a>
+                            <a href="{% url 'authentication:logout' %}" class="block px-4 py-2 hover:bg-gray-100 text-red-600">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'authentication:login' %}" class="hover:text-blue-200 transition">
+                        <i class="fas fa-sign-in-alt mr-1"></i>Login
+                    </a>
+                    <a href="{% url 'authentication:register' %}" class="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition">
+                        <i class="fas fa-user-plus mr-1"></i>Register
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden focus:outline-none" id="mobile-menu-button">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="hidden pb-4 md:hidden" id="mobile-menu">
+            <a href="{% url 'events:event_list' %}" class="block py-2 hover:text-blue-200">Events</a>
+            <a href="{% url 'search:search' %}" class="block py-2 hover:text-blue-200">Search</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard:home' %}" class="block py-2 hover:text-blue-200">Dashboard</a>
+                <a href="{% url 'authentication:profile' %}" class="block py-2 hover:text-blue-200">Profile</a>
+                <a href="{% url 'authentication:logout' %}" class="block py-2 hover:text-red-300">Logout</a>
+            {% else %}
+                <a href="{% url 'authentication:login' %}" class="block py-2 hover:text-blue-200">Login</a>
+                <a href="{% url 'authentication:register' %}" class="block py-2 hover:text-blue-200">Register</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<script>
+document.getElementById('mobile-menu-button').addEventListener('click', function() {
+    document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+</script>

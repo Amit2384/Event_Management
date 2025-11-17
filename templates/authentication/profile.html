@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - EventHub{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                {% if user.profile.profile_picture %}
+                    <img src="{{ user.profile.profile_picture.url }}" alt="Profile" class="w-20 h-20 rounded-full object-cover">
+                {% else %}
+                    <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white text-3xl"></i>
+                    </div>
+                {% endif %}
+                <div class="ml-6">
+                    <h1 class="text-3xl font-bold text-gray-800">{{ user.get_full_name|default:user.username }}</h1>
+                    <p class="text-gray-600">
+                        <i class="fas fa-user-tag mr-1"></i>{{ user.profile.get_user_type_display }}
+                    </p>
+                    <p class="text-gray-500 text-sm">
+                        <i class="fas fa-envelope mr-1"></i>{{ user.email }}
+                    </p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-sm text-gray-500">Member since</p>
+                <p class="font-semibold">{{ user.date_joined|date:"M d, Y" }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Form -->
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">
+            <i class="fas fa-edit mr-2"></i>Edit Profile
+        </h2>
+        
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- First Name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user mr-1"></i>First Name
+                    </label>
+                    {{ user_form.first_name }}
+                    {% if user_form.first_name.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ user_form.first_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Last Name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user mr-1"></i>Last Name
+                    </label>
+                    {{ user_form.last_name }}
+                    {% if user_form.last_name.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ user_form.last_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Email -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-envelope mr-1"></i>Email
+                    </label>
+                    {{ user_form.email }}
+                    {% if user_form.email.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ user_form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Phone -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-phone mr-1"></i>Phone
+                    </label>
+                    {{ profile_form.phone }}
+                    {% if profile_form.phone.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ profile_form.phone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- User Type -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user-tag mr-1"></i>User Type
+                    </label>
+                    {{ profile_form.user_type }}
+                    {% if profile_form.user_type.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ profile_form.user_type.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Date of Birth -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-birthday-cake mr-1"></i>Date of Birth
+                    </label>
+                    {{ profile_form.date_of_birth }}
+                    {% if profile_form.date_of_birth.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ profile_form.date_of_birth.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Address -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-map-marker-alt mr-1"></i>Address
+                </label>
+                {{ profile_form.address }}
+                {% if profile_form.address.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ profile_form.address.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Bio -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-info-circle mr-1"></i>Bio
+                </label>
+                {{ profile_form.bio }}
+                {% if profile_form.bio.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ profile_form.bio.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Profile Picture -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-camera mr-1"></i>Profile Picture
+                </label>
+                {{ profile_form.profile_picture }}
+                {% if profile_form.profile_picture.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ profile_form.profile_picture.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'dashboard:home' %}" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-save mr-2"></i>Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

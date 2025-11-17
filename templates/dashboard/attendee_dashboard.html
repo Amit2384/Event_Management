@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+
+{% block title %}My Dashboard - EventHub{% endblock %}
+
+{% block content %}
+<div>
+    <!-- Welcome Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+            <i class="fas fa-home mr-2"></i>My Dashboard
+        </h1>
+        <p class="text-gray-600">Welcome back, {{ user.get_full_name|default:user.username }}!</p>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-blue-100 text-sm mb-1">Upcoming Events</p>
+                    <p class="text-4xl font-bold">{{ upcoming_count }}</p>
+                    <p class="text-blue-100 text-xs mt-2">
+                        <i class="fas fa-calendar-check mr-1"></i>Registered
+                    </p>
+                </div>
+                <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+                    <i class="fas fa-calendar-day text-4xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-green-100 text-sm mb-1">Events Attended</p>
+                    <p class="text-4xl font-bold">{{ total_attended }}</p>
+                    <p class="text-green-100 text-xs mt-2">
+                        <i class="fas fa-check-circle mr-1"></i>Completed
+                    </p>
+                </div>
+                <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+                    <i class="fas fa-user-check text-4xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-purple-100 text-sm mb-1">Total Registered</p>
+                    <p class="text-4xl font-bold">{{ total_registered }}</p>
+                    <p class="text-purple-100 text-xs mt-2">
+                        <i class="fas fa-ticket-alt mr-1"></i>All Time
+                    </p>
+                </div>
+                <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+                    <i class="fas fa-chart-line text-4xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <a href="{% url 'events:event_list' %}" class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition transform hover:-translate-y-1">
+            <div class="flex items-center">
+                <div class="bg-blue-100 p-4 rounded-lg">
+                    <i class="fas fa-search text-blue-600 text-3xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-bold text-gray-800">Browse Events</h3>
+                    <p class="text-sm text-gray-600">Find new events</p>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{% url 'rsvp:my_rsvps' %}" class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition transform hover:-translate-y-1">
+            <div class="flex items-center">
+                <div class="bg-green-100 p-4 rounded-lg">
+                    <i class="fas fa-ticket-alt text-green-600 text-3xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-bold text-gray-800">My Tickets</h3>
+                    <p class="text-sm text-gray-600">View your tickets</p>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{% url 'search:search' %}" class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition transform hover:-translate-y-1">
+            <div class="flex items-center">
+                <div class="bg-purple-100 p-4 rounded-lg">
+                    <i class="fas fa-filter text-purple-600 text-3xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-bold text-gray-800">Search</h3>
+                    <p class="text-sm text-gray-600">Filter events</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Upcoming Registered Events -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- My Upcoming Events -->
+            <div class="bg-white rounded-lg shadow-lg">
+                <div class="p-6 border-b flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-calendar-check mr-2"></i>My Upcoming Events
+                    </h2>
+                    <a href="{% url 'rsvp:my_rsvps' %}" class="text-blue-600 hover:text-blue-800 text-sm font-semibold">
+                        View All <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                
+                {% if upcoming_registered %}
+                <div class="divide-y">
+                    {% for rsvp in upcoming_registered %}
+                    <div class="p-6 hover:bg-gray-50 transition">
+                        <div class="flex items-start">
+                            <!-- Event Image -->
+                            <div class="flex-shrink-0">
+                                {% if rsvp.event.banner_image %}
+                                <img src="{{ rsvp.event.banner_image.url }}" alt="{{ rsvp.event.title }}" class="w-24 h-24 rounded-lg object-cover">
+                                {% else %}
+                                <div class="w-24 h-24 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-calendar-alt text-white text-3xl"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Event Details -->
+                            <div class="ml-4 flex-1">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-800 mb-1">
+                                            <a href="{% url 'events:event_detail' rsvp.event.slug %}" class="hover:text-blue-600">
+                                                {{ rsvp.event.title }}
+                                            </a>
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mb-2">
+                                            <i class="fas fa-calendar mr-1"></i>{{ rsvp.event.start_date|date:"M d, Y at h:i A" }}
+                                        </p>
+                                        <p class="text-sm text-gray-600 mb-3">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>{{ rsvp.event.venue_name }}, {{ rsvp.event.city }}
+                                        </p>
+                                        
+                                        <!-- Ticket Info -->
+                                        <div class="flex items-center space-x-4 text-xs">
+                                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                                <i class="fas fa-ticket-alt mr-1"></i>{{ rsvp.ticket_number }}
+                                            </span>
+                                            <span class="text-gray-600">
+                                                <i class="fas fa-users mr-1"></i>{{ rsvp.number_of_tickets }} ticket(s)
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="mt-4 flex space-x-2">
+                                    <a href="{% url 'rsvp:rsvp_detail' rsvp.id %}" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">
+                                        <i class="fas fa-eye mr-1"></i>View Ticket
+                                    </a>
+                                    <a href="{% url 'rsvp:download_ticket' rsvp.id %}" class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition">
+                                        <i class="fas fa-download mr-1"></i>Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="p-12 text-center">
+                    <i class="fas fa-calendar-times text-gray-400 text-6xl mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">No Upcoming Events</h3>
+                    <p class="text-gray-600 mb-6">You haven't registered for any upcoming events</p>
+                    <a href="{% url 'events:event_list' %}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-search mr-2"></i>Browse Events
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Available Events -->
+            <div class="bg-white rounded-lg shadow-lg">
+                <div class="p-6 border-b flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-star mr-2"></i>Available Events Near You
+                    </h2>
+                    <a href="{% url 'events:event_list' %}" class="text-blue-600 hover:text-blue-800 text-sm font-semibold">
+                        View All <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                
+                {% if available_events %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
+                    {% for event in available_events %}
+                    <div class="border rounded-lg p-4 hover:shadow-md transition">
+                        {% if event.banner_image %}
+                        <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="w-full h-32 object-cover rounded-lg mb-3">
+                        {% else %}
+                        <div class="w-full h-32 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg flex items-center justify-center mb-3">
+                            <i class="fas fa-calendar-alt text-white text-3xl"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <h3 class="font-bold text-gray-800 mb-2">{{ event.title|truncatewords:8 }}</h3>
+                        <p class="text-xs text-gray-600 mb-3">
+                            <i class="fas fa-calendar mr-1"></i>{{ event.start_date|date:"M d, Y" }}
+                        </p>
+                        
+                        <a href="{% url 'events:event_detail' event.slug %}" class="block w-full text-center bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+                            View Details
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="p-8 text-center">
+                    <i class="fas fa-inbox text-gray-400 text-4xl mb-2"></i>
+                    <p class="text-gray-600 text-sm">No events available at the moment</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Recommended Events -->
+            {% if recommended_events %}
+            <div class="bg-white rounded-lg shadow-lg">
+                <div class="p-6 border-b">
+                    <h2 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-lightbulb mr-2"></i>Recommended
+                    </h2>
+                </div>
+                
+                <div class="divide-y">
+                    {% for event in recommended_events %}
+                    <div class="p-4 hover:bg-gray-50">
+                        <a href="{% url 'events:event_detail' event.slug %}">
+                            <h3 class="font-semibold text-gray-800 text-sm mb-1 hover:text-blue-600">{{ event.title|truncatewords:6 }}</h3>
+                            <p class="text-xs text-gray-600 mb-2">
+                                <i class="fas fa-calendar mr-1"></i>{{ event.start_date|date:"M d" }}
+                            </p>
+                            {% if event.category %}
+                            <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                                {{ event.category.name }}
+                            </span>
+                            {% endif %}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Favorite Categories -->
+            {% if favorite_categories %}
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-heart mr-2"></i>Your Interests
+                </h2>
+                
+                <div class="space-y-2">
+                    {% for category in favorite_categories %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-700">{{ category.event__category__name }}</span>
+                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                            {{ category.count }} events
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Recent Activity -->
+            <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+                <h3 class="text-lg font-bold mb-4">
+                    <i class="fas fa-trophy mr-2"></i>Your Activity
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-green-100">Events Registered</span>
+                        <span class="font-bold text-xl">{{ total_registered }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-green-100">Events Attended</span>
+                        <span class="font-bold text-xl">{{ total_attended }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-green-100">Upcoming</span>
+                        <span class="font-bold text-xl">{{ upcoming_count }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

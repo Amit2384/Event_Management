@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Ticket - {{ rsvp.event.title }} - EventHub{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Success Message -->
+    <div class="bg-green-100 border border-green-400 text-green-800 px-6 py-4 rounded-lg mb-6 flex items-center">
+        <i class="fas fa-check-circle text-3xl mr-4"></i>
+        <div>
+            <h3 class="font-bold text-lg">Registration Successful!</h3>
+            <p class="text-sm">Your ticket has been generated. Please bring this ticket to the event.</p>
+        </div>
+    </div>
+    
+    <!-- Ticket Card -->
+    <div class="bg-white rounded-lg shadow-2xl overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">EVENT TICKET</h1>
+                    <p class="text-blue-100">{{ rsvp.event.title }}</p>
+                </div>
+                <div class="text-right">
+                    <span class="inline-block bg-white bg-opacity-20 px-4 py-2 rounded-lg">
+                        <p class="text-xs">Ticket #</p>
+                        <p class="font-bold text-lg">{{ rsvp.ticket_number }}</p>
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ticket Content -->
+        <div class="p-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Left Side - Event & Attendee Details -->
+                <div class="space-y-6">
+                    <!-- Event Information -->
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-info-circle text-blue-600 mr-2"></i>Event Information
+                        </h3>
+                        
+                        <div class="space-y-3">
+                            <div class="flex items-start">
+                                <i class="fas fa-calendar text-gray-400 mt-1 mr-3"></i>
+                                <div>
+                                    <p class="text-xs text-gray-600">Date</p>
+                                    <p class="font-semibold text-gray-800">{{ rsvp.event.start_date|date:"F d, Y" }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <i class="fas fa-clock text-gray-400 mt-1 mr-3"></i>
+                                <div>
+                                    <p class="text-xs text-gray-600">Time</p>
+                                    <p class="font-semibold text-gray-800">{{ rsvp.event.start_date|date:"h:i A" }} - {{ rsvp.event.end_date|date:"h:i A" }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <i class="fas fa-map-marker-alt text-gray-400 mt-1 mr-3"></i>
+                                <div>
+                                    <p class="text-xs text-gray-600">Venue</p>
+                                    <p class="font-semibold text-gray-800">{{ rsvp.event.venue_name }}</p>
+                                    <p class="text-sm text-gray-600">{{ rsvp.event.venue_address }}</p>
+                                    <p class="text-sm text-gray-600">{{ rsvp.event.city }}, {{ rsvp.event.state }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Attendee Information -->
+                    <div class="border-t pt-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-user text-blue-600 mr-2"></i>Attendee Information
+                        </h3>
+                        
+                        <div class="space-y-2">
+                            <div>
+                                <p class="text-xs text-gray-600">Name</p>
+                                <p class="font-semibold text-gray-800">{{ rsvp.user.get_full_name|default:rsvp.user.username }}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-xs text-gray-600">Email</p>
+                                <p class="font-semibold text-gray-800">{{ rsvp.user.email }}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-xs text-gray-600">Number of Tickets</p>
+                                <p class="font-semibold text-gray-800">{{ rsvp.number_of_tickets }}</p>
+                            </div>
+                            
+                            <div>
+                                <p class="text-xs text-gray-600">Status</p>
+                                <span class="inline-block bg-{% if rsvp.status == 'confirmed' %}green{% elif rsvp.status == 'attended' %}blue{% else %}yellow{% endif %}-100 text-{% if rsvp.status == 'confirmed' %}green{% elif rsvp.status == 'attended' %}blue{% else %}yellow{% endif %}-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                    {{ rsvp.get_status_display }}
+                                </span>
+                            </div>
+                            
+                            {% if rsvp.notes %}
+                            <div>
+                                <p class="text-xs text-gray-600">Special Requests</p>
+                                <p class="text-sm text-gray-800">{{ rsvp.notes }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Side - QR Code -->
+                <div class="flex flex-col items-center justify-center">
+                    <div class="bg-gray-50 p-6 rounded-lg border-2 border-gray-200">
+                        {% if rsvp.qr_code %}
+                        <img src="{{ rsvp.qr_code.url }}" alt="QR Code" class="w-64 h-64">
+                        {% else %}
+                        <div class="w-64 h-64 bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-qrcode text-gray-400 text-6xl"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <p class="text-center text-sm text-gray-600 mt-4">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Show this QR code at the event for check-in
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Important Notes -->
+            <div class="mt-8 pt-6 border-t">
+                <h3 class="text-lg font-bold text-gray-800 mb-3">
+                    <i class="fas fa-exclamation-circle text-blue-600 mr-2"></i>Important Information
+                </h3>
+                <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-600 mt-1 mr-2"></i>
+                        <span>Please arrive at least 15 minutes before the event starts</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-600 mt-1 mr-2"></i>
+                        <span>Bring this ticket (printed or digital) for check-in</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-600 mt-1 mr-2"></i>
+                        <span>This ticket is valid for {{ rsvp.number_of_tickets }} person(s)</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-600 mt-1 mr-2"></i>
+                        <span>Ticket is non-transferable</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Footer Actions -->
+        <div class="bg-gray-50 px-8 py-6 flex flex-wrap gap-4">
+            <a href="{% url 'rsvp:download_ticket' rsvp.id %}" class="flex-1 bg-blue-600 text-white text-center py-3 rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-download mr-2"></i>Download PDF Ticket
+            </a>
+            <a href="{% url 'events:event_detail' rsvp.event.slug %}" class="flex-1 bg-gray-600 text-white text-center py-3 rounded-lg hover:bg-gray-700 transition">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Event
+            </a>
+            {% if rsvp.status == 'confirmed' %}
+            <a href="{% url 'rsvp:cancel_rsvp' rsvp.id %}" class="flex-1 bg-red-600 text-white text-center py-3 rounded-lg hover:bg-red-700 transition">
+                <i class="fas fa-times-circle mr-2"></i>Cancel Registration
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

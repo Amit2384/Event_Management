@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Event Categories - EventHub{% endblock %}
+
+{% block content %}
+<div>
+    {% comment %}
+    <!-- Header -->
+    <div class="mb-8 text-center">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+            <i class="fas fa-th-large mr-2"></i>Event Categories
+        </h1>
+        <p class="text-gray-600">Browse events by category</p>
+    </div>
+    
+    <!-- Categories Grid -->
+    {% if categories %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for category in categories %}
+        <a href="{% url 'search:filter_by_category' category.id %}" class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition transform hover:-translate-y-1">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    {% if category.icon %}
+                    <i class="{{ category.icon }} text-blue-600 text-3xl"></i>
+                    {% else %}
+                    <i class="fas fa-tag text-blue-600 text-3xl"></i>
+                    {% endif %}
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">{{ category.name }}</h3>
+                {% if category.description %}
+                <p class="text-gray-600 text-sm mb-3">{{ category.description|truncatewords:15 }}</p>
+                {% endif %}
+                <span class="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+                    {{ category.event_count }} Event{{ category.event_count|pluralize }}
+                </span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+        <i class="fas fa-th-large text-gray-400 text-6xl mb-4"></i>
+        <h3 class="text-2xl font-bold text-gray-800 mb-2">No Categories Available</h3>
+        <p class="text-gray-600">Categories will appear here once they are created</p>
+    </div>
+    {% endif %}
+    {% endcomment %}
+</div>
+{% endblock %}

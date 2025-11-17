@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+
+{% block title %}Organizer Dashboard - EventHub{% endblock %}
+
+{% block content %}
+<div>
+    <!-- Welcome Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+            <i class="fas fa-tachometer-alt mr-2"></i>Organizer Dashboard
+        </h1>
+        <p class="text-gray-600">Welcome back, {{ user.get_full_name|default:user.username }}!</p>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-blue-100 text-sm mb-1">Total Events</p>
+                    <p class="text-4xl font-bold">{{ total_events }}</p>
+                    <p class="text-blue-100 text-xs mt-2">
+                        <i class="fas fa-check-circle mr-1"></i>{{ published_events }} Published
+                    </p>
+                </div>
+                <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+                    <i class="fas fa-calendar-alt text-4xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-green-100 text-sm mb-1">Total RSVPs</p>
+                    <p class="text-4xl font-bold">{{ total_rsvps }}</p>
+                    <p class="text-green-100 text-xs mt-2">
+                        <i class="fas fa-ticket-alt mr-1"></i>{{ total_tickets }} Tickets
+                    </p>
+                </div>
+                <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+                    <i class="fas fa-users text-4xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-purple-100 text-sm mb-1">Check-ins</p>
+                    <p class="text-4xl font-bold">{{ total_checkins }}</p>
+                    <p class="text-purple-100 text-xs mt-2">
+                        <i class="fas fa-user-check mr-1"></i>Attended Events
+                    </p>
+                </div>
+                <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+                    <i class="fas fa-check-circle text-4xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-yellow-100 text-sm mb-1">Total Revenue</p>
+                    <p class="text-4xl font-bold">${{ total_revenue|floatformat:2 }}</p>
+                    <p class="text-yellow-100 text-xs mt-2">
+                        <i class="fas fa-dollar-sign mr-1"></i>From Paid Events
+                    </p>
+                </div>
+                <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+                    <i class="fas fa-money-bill-wave text-4xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <a href="{% url 'events:event_create' %}" class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition transform hover:-translate-y-1">
+            <div class="flex items-center">
+                <div class="bg-blue-100 p-4 rounded-lg">
+                    <i class="fas fa-plus-circle text-blue-600 text-3xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-bold text-gray-800">Create Event</h3>
+                    <p class="text-sm text-gray-600">Start a new event</p>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{% url 'events:my_events' %}" class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition transform hover:-translate-y-1">
+            <div class="flex items-center">
+                <div class="bg-green-100 p-4 rounded-lg">
+                    <i class="fas fa-calendar-check text-green-600 text-3xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-bold text-gray-800">My Events</h3>
+                    <p class="text-sm text-gray-600">Manage your events</p>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{% url 'dashboard:analytics' %}" class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition transform hover:-translate-y-1">
+            <div class="flex items-center">
+                <div class="bg-purple-100 p-4 rounded-lg">
+                    <i class="fas fa-chart-line text-purple-600 text-3xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-bold text-gray-800">Analytics</h3>
+                    <p class="text-sm text-gray-600">View detailed stats</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Upcoming Events -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-lg">
+                <div class="p-6 border-b flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-calendar-day mr-2"></i>Upcoming Events
+                    </h2>
+                    <a href="{% url 'events:my_events' %}" class="text-blue-600 hover:text-blue-800 text-sm font-semibold">
+                        View All <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                
+                {% if upcoming_events %}
+                <div class="divide-y">
+                    {% for event in upcoming_events %}
+                    <div class="p-6 hover:bg-gray-50 transition">
+                        <div class="flex items-start">
+                            <!-- Event Image -->
+                            <div class="flex-shrink-0">
+                                {% if event.banner_image %}
+                                <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="w-20 h-20 rounded-lg object-cover">
+                                {% else %}
+                                <div class="w-20 h-20 bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-calendar-alt text-white text-2xl"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Event Details -->
+                            <div class="ml-4 flex-1">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-800 mb-1">
+                                            <a href="{% url 'events:event_detail' event.slug %}" class="hover:text-blue-600">
+                                                {{ event.title }}
+                                            </a>
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mb-2">
+                                            <i class="fas fa-calendar mr-1"></i>{{ event.start_date|date:"M d, Y at h:i A" }}
+                                        </p>
+                                        <p class="text-sm text-gray-600">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>{{ event.venue_name }}, {{ event.city }}
+                                        </p>
+                                    </div>
+                                    <span class="bg-{% if event.status == 'published' %}green{% elif event.status == 'draft' %}yellow{% else %}gray{% endif %}-100 text-{% if event.status == 'published' %}green{% elif event.status == 'draft' %}yellow{% else %}gray{% endif %}-800 text-xs px-3 py-1 rounded-full">
+                                        {{ event.get_status_display }}
+                                    </span>
+                                </div>
+                                
+                                <!-- Stats -->
+                                <div class="mt-3 flex items-center space-x-4 text-sm">
+                                    <span class="text-gray-600">
+                                        <i class="fas fa-users mr-1"></i>
+                                        <strong>{{ event.get_booked_seats }}</strong>/{{ event.total_seats }} Registered
+                                    </span>
+                                    <span class="text-gray-600">
+                                        <i class="fas fa-chart-line mr-1"></i>
+                                        <strong>{{ event.get_booking_percentage|floatformat:0 }}%</strong> Filled
+                                    </span>
+                                </div>
+                                
+                                <!-- Progress Bar -->
+                                <div class="mt-2">
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <!-- <div class="bg-blue-600 h-2 rounded-full" style="width: {{ event.get_booking_percentage }}%"></div> -->
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: '{{ event.get_booking_percentage }}%';"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="p-12 text-center">
+                    <i class="fas fa-calendar-plus text-gray-400 text-6xl mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">No Upcoming Events</h3>
+                    <p class="text-gray-600 mb-6">Create your first event to get started</p>
+                    <a href="{% url 'events:event_create' %}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-plus-circle mr-2"></i>Create Event
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Recent RSVPs -->
+            <div class="bg-white rounded-lg shadow-lg">
+                <div class="p-6 border-b">
+                    <h2 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-bell mr-2"></i>Recent Registrations
+                    </h2>
+                </div>
+                
+                {% if recent_rsvps %}
+                <div class="divide-y max-h-96 overflow-y-auto">
+                    {% for rsvp in recent_rsvps %}
+                    <div class="p-4 hover:bg-gray-50">
+                        <div class="flex items-center">
+                            {% if rsvp.user.profile.profile_picture %}
+                            <img src="{{ rsvp.user.profile.profile_picture.url }}" alt="{{ rsvp.user.get_full_name }}" class="w-10 h-10 rounded-full object-cover">
+                            {% else %}
+                            <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+                                <span class="text-white font-semibold text-sm">{{ rsvp.user.first_name.0|default:rsvp.user.username.0 }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="ml-3 flex-1">
+                                <p class="text-sm font-semibold text-gray-800">{{ rsvp.user.get_full_name|default:rsvp.user.username }}</p>
+                                <p class="text-xs text-gray-600">{{ rsvp.event.title|truncatewords:5 }}</p>
+                                <p class="text-xs text-gray-500">{{ rsvp.created_at|timesince }} ago</p>
+                            </div>
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                                {{ rsvp.number_of_tickets }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="p-8 text-center">
+                    <i class="fas fa-inbox text-gray-400 text-4xl mb-2"></i>
+                    <p class="text-gray-600 text-sm">No recent registrations</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Events by Category -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-chart-pie mr-2"></i>Events by Category
+                </h2>
+                
+                {% if events_by_category %}
+                <div class="space-y-3">
+                    {% for category in events_by_category %}
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-700 font-semibold">{{ category.category__name|default:"Uncategorized" }}</span>
+                            <span class="text-gray-600">{{ category.count }}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: '{% widthratio category.count total_events 100 %}%'"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-600 text-sm text-center">No category data available</p>
+                {% endif %}
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg shadow-lg p-6 text-white">
+                <h3 class="text-lg font-bold mb-4">
+                    <i class="fas fa-trophy mr-2"></i>Your Performance
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-indigo-100">Published Events</span>
+                        <span class="font-bold text-xl">{{ published_events }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-indigo-100">Draft Events</span>
+                        <span class="font-bold text-xl">{{ draft_events }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-indigo-100">Completed Events</span>
+                        <span class="font-bold text-xl">{{ completed_events }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

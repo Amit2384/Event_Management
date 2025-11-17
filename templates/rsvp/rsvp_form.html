@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Register for {{ event.title }} - EventHub{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Registration Form -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-lg p-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                    <i class="fas fa-ticket-alt mr-2"></i>Register for Event
+                </h1>
+                <p class="text-gray-600 mb-6">Complete your registration to secure your spot</p>
+                
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Number of Tickets -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-users mr-1"></i>Number of Tickets *
+                        </label>
+                        {{ form.number_of_tickets }}
+                        <p class="text-gray-500 text-sm mt-1">
+                            Available seats: <span class="font-semibold text-blue-600">{{ event.available_seats }}</span>
+                        </p>
+                        {% if form.number_of_tickets.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.number_of_tickets.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-comment mr-1"></i>Special Requests or Notes (Optional)
+                        </label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.notes.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Terms & Conditions -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <label class="flex items-start">
+                            <input type="checkbox" required class="mt-1 mr-3 rounded text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm text-gray-700">
+                                I agree to the <a href="#" class="text-blue-600 hover:text-blue-800">terms and conditions</a> and understand the cancellation policy.
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="flex justify-end space-x-4">
+                        <a href="{% url 'events:event_detail' event.slug %}" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                            <i class="fas fa-times mr-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-check-circle mr-2"></i>Complete Registration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Event Summary Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-lg p-6 sticky top-4">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Event Summary</h3>
+                
+                <!-- Event Image -->
+                {% if event.banner_image %}
+                <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="w-full h-32 object-cover rounded-lg mb-4">
+                {% else %}
+                <div class="w-full h-32 bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center rounded-lg mb-4">
+                    <i class="fas fa-calendar-alt text-white text-4xl"></i>
+                </div>
+                {% endif %}
+                
+                <!-- Event Details -->
+                <h4 class="font-bold text-gray-800 mb-3">{{ event.title }}</h4>
+                
+                <div class="space-y-3 text-sm">
+                    <div class="flex items-start">
+                        <i class="fas fa-calendar text-blue-600 mt-1 mr-3"></i>
+                        <div>
+                            <p class="text-gray-600">Date</p>
+                            <p class="font-semibold text-gray-800">{{ event.start_date|date:"F d, Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <i class="fas fa-clock text-blue-600 mt-1 mr-3"></i>
+                        <div>
+                            <p class="text-gray-600">Time</p>
+                            <p class="font-semibold text-gray-800">{{ event.start_date|date:"h:i A" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <i class="fas fa-map-marker-alt text-blue-600 mt-1 mr-3"></i>
+                        <div>
+                            <p class="text-gray-600">Location</p>
+                            <p class="font-semibold text-gray-800">{{ event.venue_name }}</p>
+                            <p class="text-gray-600 text-xs">{{ event.city }}, {{ event.state }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if event.event_type == 'paid' %}
+                    <div class="flex items-start">
+                        <i class="fas fa-dollar-sign text-blue-600 mt-1 mr-3"></i>
+                        <div>
+                            <p class="text-gray-600">Price per Ticket</p>
+                            <p class="font-semibold text-gray-800 text-lg">${{ event.ticket_price }}</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="bg-green-100 text-green-800 px-3 py-2 rounded-lg text-center">
+                        <i class="fas fa-gift mr-2"></i>FREE EVENT
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Organizer Info -->
+                <div class="mt-6 pt-6 border-t">
+                    <p class="text-xs text-gray-600 mb-2">Organized by</p>
+                    <div class="flex items-center">
+                        {% if event.organizer.profile.profile_picture %}
+                        <img src="{{ event.organizer.profile.profile_picture.url }}" alt="{{ event.organizer.get_full_name }}" class="w-10 h-10 rounded-full object-cover">
+                        {% else %}
+                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        {% endif %}
+                        <div class="ml-3">
+                            <p class="font-semibold text-gray-800 text-sm">{{ event.organizer.get_full_name|default:event.organizer.username }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

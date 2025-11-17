@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            background-color: white;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        .event-details {
+            background-color: #f5f5f5;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Event Created Successfully!</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hi {{ event.organizer.username }},</p>
+            
+            <p>Your event has been created successfully and is now <strong>{{ event.get_status_display }}</strong>.</p>
+            
+            <div class="event-details">
+                <h2>{{ event.title }}</h2>
+                <p><strong>📅 Date:</strong> {{ event.start_date|date:"F d, Y" }} at {{ event.start_date|time:"g:i A" }}</p>
+                <p><strong>📍 Venue:</strong> {{ event.venue_name }}</p>
+                <p><strong>🎫 Tickets:</strong> {{ event.total_seats }} available</p>
+                <p><strong>💰 Price:</strong> ${{ event.ticket_price }}</p>
+            </div>
+            
+            <p><strong>What's next?</strong></p>
+            <ul>
+                <li>Review your event details</li>
+                <li>{% if event.status == 'draft' %}Publish your event to make it visible{% endif %}</li>
+                <li>Share your event with potential attendees</li>
+                <li>Monitor registrations in your dashboard</li>
+            </ul>
+            
+            <a href="{{ domain }}{{ event.get_absolute_url }}" class="button">View Event</a>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message from Event Management System.</p>
+            <p>If you have any questions, please contact support.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Undo Check-in - EventHub{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <!-- Warning Icon -->
+        <div class="text-center mb-6">
+            <i class="fas fa-undo text-yellow-600 text-6xl mb-4"></i>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Undo Check-in</h1>
+            <p class="text-gray-600">Are you sure you want to undo this check-in?</p>
+        </div>
+        
+        <!-- Check-in Info -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <div class="flex items-center mb-4">
+                {% if checkin.rsvp.user.profile.profile_picture %}
+                <img src="{{ checkin.rsvp.user.profile.profile_picture.url }}" alt="{{ checkin.rsvp.user.get_full_name }}" class="w-16 h-16 rounded-full object-cover">
+                {% else %}
+                <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-xl">{{ checkin.rsvp.user.first_name.0|default:checkin.rsvp.user.username.0 }}</span>
+                </div>
+                {% endif %}
+                <div class="ml-4">
+                    <h2 class="text-xl font-bold text-gray-800">{{ checkin.rsvp.user.get_full_name|default:checkin.rsvp.user.username }}</h2>
+                    <p class="text-sm text-gray-600">{{ checkin.rsvp.user.email }}</p>
+                </div>
+            </div>
+            
+            <div class="space-y-2 text-sm text-gray-600 border-t pt-4">
+                <p><i class="fas fa-calendar mr-2"></i><strong>Event:</strong> {{ checkin.rsvp.event.title }}</p>
+                <p><i class="fas fa-ticket-alt mr-2"></i><strong>Ticket Number:</strong> {{ checkin.rsvp.ticket_number }}</p>
+                <p><i class="fas fa-clock mr-2"></i><strong>Checked In:</strong> {{ checkin.checked_in_at|date:"M d, Y at h:i A" }}</p>
+                <p><i class="fas fa-user mr-2"></i><strong>Checked In By:</strong> {{ checkin.checked_in_by.username }}</p>
+                {% if checkin.notes %}
+                <p><i class="fas fa-comment mr-2"></i><strong>Notes:</strong> {{ checkin.notes }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Warning Message -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <p class="text-yellow-800 font-semibold mb-2">
+                <i class="fas fa-exclamation-triangle mr-2"></i>What happens when you undo:
+            </p>
+            <ul class="text-yellow-700 text-sm space-y-1 ml-6 list-disc">
+                <li>The check-in record will be deleted</li>
+                <li>The attendee's status will be changed back to "Confirmed"</li>
+                <li>The attendee can be checked in again later</li>
+            </ul>
+        </div>
+        
+        <!-- Confirmation Form -->
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'checkin:checkin_list' checkin.rsvp.event.slug %}" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </a>
+                <button type="submit" class="px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition">
+                    <i class="fas fa-undo mr-2"></i>Yes, Undo Check-in
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
