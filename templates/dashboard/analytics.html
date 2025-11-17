@@ -1,0 +1,379 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .stat-card h3 {
+        margin: 0;
+        font-size: 2.5rem;
+        color: #2c3e50;
+    }
+    
+    .stat-card p {
+        margin: 10px 0 0 0;
+        color: #7f8c8d;
+        font-size: 1rem;
+    }
+    
+    .stat-card.primary { border-top: 4px solid #3498db; }
+    .stat-card.success { border-top: 4px solid #2ecc71; }
+    .stat-card.warning { border-top: 4px solid #f39c12; }
+    .stat-card.danger { border-top: 4px solid #e74c3c; }
+    
+    .chart-container {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .chart-container h2 {
+        margin-top: 0;
+        color: #2c3e50;
+        border-bottom: 2px solid #ecf0f1;
+        padding-bottom: 10px;
+    }
+    
+    .chart-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 20px;
+    }
+    
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .page-header h1 {
+        margin: 0;
+        color: #2c3e50;
+    }
+    
+    .date-filter {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .date-filter select {
+        padding: 8px 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background: white;
+        cursor: pointer;
+    }
+    
+    canvas {
+        max-height: 300px;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+    <div class="page-header">
+        <h1>📊 Analytics Dashboard</h1>
+        <div class="date-filter">
+            <select id="timeRange" onchange="filterData(this.value)">
+                <option value="7">Last 7 Days</option>
+                <option value="30" selected>Last 30 Days</option>
+                <option value="90">Last 90 Days</option>
+                <option value="365">Last Year</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <h3>{{ total_events|default:0 }}</h3>
+            <p>Total Events</p>
+        </div>
+        
+        <div class="stat-card success">
+            <h3>{{ total_registrations|default:0 }}</h3>
+            <p>Total Registrations</p>
+        </div>
+        
+        <div class="stat-card warning">
+            <h3>{{ upcoming_events|default:0 }}</h3>
+            <p>Upcoming Events</p>
+        </div>
+        
+        <div class="stat-card danger">
+            <h3>${{ total_revenue|default:0|floatformat:2 }}</h3>
+            <p>Total Revenue</p>
+        </div>
+    </div>
+    
+    <!-- Charts Row 1 -->
+    <div class="chart-row">
+        <div class="chart-container">
+            <h2>📈 Events Over Time</h2>
+            <canvas id="eventsChart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <h2>🎫 Registration Status</h2>
+            <canvas id="registrationChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Charts Row 2 -->
+    <div class="chart-row">
+        <div class="chart-container">
+            <h2>📊 Events by Type</h2>
+            <canvas id="eventTypeChart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <h2>📍 Events by City</h2>
+            <canvas id="cityChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="chart-container">
+        <h2>🕐 Recent Activity</h2>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; min-width: 600px;">
+                <thead>
+                    <tr style="background: #f8f9fa;">
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Event</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Date</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Registrations</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in recent_events %}
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">
+                            <a href="{{ event.get_absolute_url }}" style="color: #3498db; text-decoration: none;">
+                                {{ event.title }}
+                            </a>
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">
+                            {{ event.start_date|date:"M d, Y" }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">
+                            {{ event.registration_count|default:0 }}
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">
+                            ${{ event.revenue|default:0|floatformat:2 }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="padding: 40px; text-align: center; color: #999;">
+                            No recent events found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- Data as JSON (IDE won't complain about this) -->
+<script id="analytics-data" type="application/json">
+{
+    "eventsLabels": {{ events_labels|safe|default:"[]" }},
+    "eventsData": {{ events_data|safe|default:"[]" }},
+    "cityLabels": {{ city_labels|safe|default:"[]" }},
+    "cityData": {{ city_data|safe|default:"[]" }},
+    "paidReg": {{ paid_registrations|default:0 }},
+    "pendingReg": {{ pending_registrations|default:0 }},
+    "cancelledReg": {{ cancelled_registrations|default:0 }},
+    "freeEvents": {{ free_events|default:0 }},
+    "paidEvents": {{ paid_events|default:0 }}
+}
+</script>
+
+<script>
+    // Parse data from JSON script tag
+    const analyticsData = JSON.parse(document.getElementById('analytics-data').textContent);
+    
+    const eventsLabels = analyticsData.eventsLabels || [];
+    const eventsData = analyticsData.eventsData || [];
+    const cityLabels = analyticsData.cityLabels || [];
+    const cityData = analyticsData.cityData || [];
+    const paidReg = analyticsData.paidReg || 0;
+    const pendingReg = analyticsData.pendingReg || 0;
+    const cancelledReg = analyticsData.cancelledReg || 0;
+    const freeEvents = analyticsData.freeEvents || 0;
+    const paidEvents = analyticsData.paidEvents || 0;
+    
+    // Events Over Time Chart
+    const eventsCtx = document.getElementById('eventsChart');
+    if (eventsCtx && eventsLabels.length > 0) {
+        new Chart(eventsCtx, {
+            type: 'line',
+            data: {
+                labels: eventsLabels,
+                datasets: [{
+                    label: 'Events Created',
+                    data: eventsData,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { 
+                        display: true,
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Registration Status Chart
+    const registrationCtx = document.getElementById('registrationChart');
+    if (registrationCtx) {
+        new Chart(registrationCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Paid', 'Pending', 'Cancelled'],
+                datasets: [{
+                    data: [paidReg, pendingReg, cancelledReg],
+                    backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { 
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Event Type Chart
+    const typeCtx = document.getElementById('eventTypeChart');
+    if (typeCtx) {
+        new Chart(typeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Free Events', 'Paid Events'],
+                datasets: [{
+                    label: 'Number of Events',
+                    data: [freeEvents, paidEvents],
+                    backgroundColor: ['#3498db', '#2ecc71']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // City Chart
+    const cityCtx = document.getElementById('cityChart');
+    if (cityCtx) {
+        if (cityLabels.length > 0) {
+            new Chart(cityCtx, {
+                type: 'bar',
+                data: {
+                    labels: cityLabels,
+                    datasets: [{
+                        label: 'Events by City',
+                        data: cityData,
+                        backgroundColor: '#9b59b6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            cityCtx.parentElement.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No city data available</div>';
+        }
+    }
+    
+    function filterData(days) {
+        window.location.href = `?days=${days}`;
+    }
+</script>
+{% endblock %}

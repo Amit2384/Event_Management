@@ -100,7 +100,7 @@ def my_rsvps(request):
     Display all RSVPs for current user.
     Organized by upcoming, past, and cancelled events.
     """
-    rsvps = RSVP.objects.filter(user=request.user).select_related('event', 'event__category')
+    rsvps = RSVP.objects.filter(user=request.user).select_related('event') #, 'event__category'
     
     # Current time
     now = timezone.now()
