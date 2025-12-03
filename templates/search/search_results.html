@@ -206,7 +206,7 @@
                 <!-- Price -->
                 {% if event.event_type == 'paid' %}
                 <p class="text-lg font-bold text-blue-600 mb-4">
-                    <i class="fas fa-dollar-sign mr-1"></i>${{ event.ticket_price }}
+                    <i class="mr-1"></i>₹{{ event.ticket_price }}
                 </p>
                 {% else %}
                 <p class="text-lg font-bold text-green-600 mb-4">

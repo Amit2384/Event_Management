@@ -135,7 +135,7 @@
         </div>
         
         <div class="stat-card danger">
-            <h3>${{ total_revenue|default:0|floatformat:2 }}</h3>
+            <h3>₹{{ total_revenue|default:0|floatformat:2 }}</h3>
             <p>Total Revenue</p>
         </div>
     </div>
@@ -194,7 +194,7 @@
                             {{ event.registration_count|default:0 }}
                         </td>
                         <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">
-                            ${{ event.revenue|default:0|floatformat:2 }}
+                            ₹{{ event.revenue|default:0|floatformat:2 }}
                         </td>
                     </tr>
                     {% empty %}
@@ -373,7 +373,7 @@
     }
     
     function filterData(days) {
-        window.location.href = `?days=${days}`;
+        window.location.href = `?days=₹{days}`;
     }
 </script>
 {% endblock %}

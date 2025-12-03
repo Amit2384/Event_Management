@@ -107,6 +107,7 @@ LOGOUT_REDIRECT_URL = 'authentication:login'
 
 # Email configuration (for notifications module)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Development
+DEFAULT_FROM_EMAIL = 'noreply@eventmanagement.com'
 # For production, use SMTP:
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'smtp.gmail.com'

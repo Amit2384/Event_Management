@@ -3,6 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.db.models import Sum
 from .models import RSVP
 from .forms import RSVPForm
 from events.models import Event
@@ -11,6 +15,84 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.utils import ImageReader
 from io import BytesIO
 import os
+
+
+# @login_required
+# def create_rsvp(request, event_slug):
+#     """
+#     Create RSVP for an event.
+#     Generates ticket with QR code automatically.
+#     Validates availability and user eligibility.
+#     """
+#     event = get_object_or_404(Event, slug=event_slug, status='published')
+    
+#     # Check if user already has RSVP for this event
+#     existing_rsvp = RSVP.objects.filter(event=event, user=request.user).first()
+#     if existing_rsvp and existing_rsvp.status != 'cancelled':
+#         messages.warning(request, 'You have already registered for this event.')
+#         return redirect('rsvp:my_rsvps')
+    
+#     # Check if event is full
+#     if event.is_full():
+#         messages.error(request, 'Sorry, this event is fully booked.')
+#         return redirect('events:event_detail', slug=event_slug)
+    
+#     # Check if event has already started
+#     if event.start_date < timezone.now():
+#         messages.error(request, 'Registration is closed. This event has already started.')
+#         return redirect('events:event_detail', slug=event_slug)
+    
+#     if request.method == 'POST':
+#         form = RSVPForm(request.POST, event=event)
+#         if form.is_valid():
+#             rsvp = form.save(commit=False)
+#             rsvp.event = event
+#             rsvp.user = request.user
+#             rsvp.status = 'confirmed'
+            
+#             # Check availability one more time
+#             if rsvp.number_of_tickets > event.available_seats:
+#                 messages.error(request, f'Only {event.available_seats} seats remaining.')
+#                 return redirect('events:event_detail', slug=event_slug)
+            
+#             # Update available seats
+#             event.available_seats -= rsvp.number_of_tickets
+#             event.save()
+            
+#             # Confirm RSVP
+#             rsvp.save()
+#             rsvp.confirm()
+            
+#             messages.success(
+#                 request, 
+#                 f'Successfully registered for {event.title}! Your ticket number is {rsvp.ticket_number}.'
+#             )
+            
+#             # Send confirmation to attendee (fails silently)
+#             try:
+#                 send_rsvp_confirmation_email(rsvp, request)
+#             except Exception as e:
+#                 print(f"Failed to send RSVP confirmation email: {e}")
+            
+#             # Send notification to organizer (fails silently)
+#             try:
+#                 send_organizer_notification_email(rsvp, request)
+#             except Exception as e:
+#                 print(f"Failed to send organizer notification email: {e}")
+            
+#             return redirect('rsvp:rsvp_detail', rsvp_id=rsvp.id)
+#         else:
+#             messages.error(request, 'Please correct the errors below.')
+#     else:
+#         form = RSVPForm(event=event)
+    
+#     context = {
+#         'form': form,
+#         'event': event,
+#         'title': f'Register for {event.title}'
+#     }
+#     return render(request, 'rsvp/rsvp_form.html', context)
+
 
 @login_required
 def create_rsvp(request, event_slug):
@@ -23,6 +105,8 @@ def create_rsvp(request, event_slug):
     
     # Check if user already has RSVP for this event
     existing_rsvp = RSVP.objects.filter(event=event, user=request.user).first()
+    
+    # If RSVP exists and is NOT cancelled, prevent re-registration
     if existing_rsvp and existing_rsvp.status != 'cancelled':
         messages.warning(request, 'You have already registered for this event.')
         return redirect('rsvp:my_rsvps')
@@ -40,10 +124,19 @@ def create_rsvp(request, event_slug):
     if request.method == 'POST':
         form = RSVPForm(request.POST, event=event)
         if form.is_valid():
-            rsvp = form.save(commit=False)
-            rsvp.event = event
-            rsvp.user = request.user
-            rsvp.status = 'confirmed'
+            # If cancelled RSVP exists, reactivate it instead of creating new one
+            if existing_rsvp and existing_rsvp.status == 'cancelled':
+                rsvp = existing_rsvp
+                rsvp.status = 'confirmed'
+                rsvp.number_of_tickets = form.cleaned_data['number_of_tickets']
+                # Keep the old ticket number or generate new one
+                # rsvp.ticket_number stays the same
+            else:
+                # Create new RSVP
+                rsvp = form.save(commit=False)
+                rsvp.event = event
+                rsvp.user = request.user
+                rsvp.status = 'confirmed'
             
             # Check availability one more time
             if rsvp.number_of_tickets > event.available_seats:
@@ -54,8 +147,10 @@ def create_rsvp(request, event_slug):
             event.available_seats -= rsvp.number_of_tickets
             event.save()
             
-            # Confirm RSVP
+            # Save RSVP (either new or updated)
             rsvp.save()
+            
+            # Confirm RSVP (this might generate new QR code)
             rsvp.confirm()
             
             messages.success(
@@ -63,9 +158,17 @@ def create_rsvp(request, event_slug):
                 f'Successfully registered for {event.title}! Your ticket number is {rsvp.ticket_number}.'
             )
             
-            # Send confirmation notification
-            from notifications.utils import send_rsvp_notification
-            send_rsvp_notification(rsvp, 'created')
+            # Send confirmation to attendee (fails silently)
+            try:
+                send_rsvp_confirmation_email(rsvp, request)
+            except Exception as e:
+                print(f"Failed to send RSVP confirmation email: {e}")
+            
+            # Send notification to organizer (fails silently)
+            try:
+                send_organizer_notification_email(rsvp, request)
+            except Exception as e:
+                print(f"Failed to send organizer notification email: {e}")
             
             return redirect('rsvp:rsvp_detail', rsvp_id=rsvp.id)
         else:
@@ -94,13 +197,14 @@ def rsvp_detail(request, rsvp_id):
     }
     return render(request, 'rsvp/rsvp_detail.html', context)
 
+
 @login_required
 def my_rsvps(request):
     """
     Display all RSVPs for current user.
     Organized by upcoming, past, and cancelled events.
     """
-    rsvps = RSVP.objects.filter(user=request.user).select_related('event') #, 'event__category'
+    rsvps = RSVP.objects.filter(user=request.user).select_related('event')
     
     # Current time
     now = timezone.now()
@@ -130,6 +234,7 @@ def my_rsvps(request):
         'title': 'My Registrations'
     }
     return render(request, 'rsvp/my_rsvps.html', context)
+
 
 @login_required
 def cancel_rsvp(request, rsvp_id):
@@ -163,9 +268,11 @@ def cancel_rsvp(request, rsvp_id):
             f'Your registration for {rsvp.event.title} has been cancelled. {rsvp.number_of_tickets} seat(s) have been released.'
         )
         
-        # Send cancellation notification
-        from notifications.utils import send_rsvp_notification
-        send_rsvp_notification(rsvp, 'cancelled')
+        # Send cancellation notification (fails silently)
+        try:
+            send_rsvp_cancellation_email(rsvp, request)
+        except Exception as e:
+            print(f"Failed to send cancellation email: {e}")
         
         return redirect('rsvp:my_rsvps')
     
@@ -174,6 +281,7 @@ def cancel_rsvp(request, rsvp_id):
         'title': 'Cancel Registration'
     }
     return render(request, 'rsvp/rsvp_cancel.html', context)
+
 
 @login_required
 def download_ticket(request, rsvp_id):
@@ -352,10 +460,10 @@ def download_ticket(request, rsvp_id):
     
     if rsvp.event.event_type == 'paid':
         y_position -= 15
-        p.drawString(80, y_position, f"• Ticket Price: ${rsvp.event.ticket_price} per ticket")
+        p.drawString(80, y_position, f"• Ticket Price: ₹{rsvp.event.ticket_price} per ticket")
     
-    # Footer
-    p.setFont("Helvetica-Italic", 8)
+   # Footer
+    p.setFont("Helvetica-Oblique", 8)
     p.setFillColorRGB(0.5, 0.5, 0.5)
     p.drawCentredString(
         width / 2, 
@@ -378,6 +486,7 @@ def download_ticket(request, rsvp_id):
     
     return response
 
+
 @login_required
 def event_attendees(request, event_slug):
     """
@@ -392,14 +501,12 @@ def event_attendees(request, event_slug):
         messages.error(request, 'You do not have permission to view this page.')
         return redirect('events:event_detail', slug=event_slug)
     
-    # Get all RSVPs except cancelled
+    # Get all RSVPs except cancelled (removed 'user__profile')
     rsvps = RSVP.objects.filter(
         event=event
     ).exclude(
         status='cancelled'
-    ).select_related(
-        'user', 'user__profile'
-    ).order_by('-created_at')
+    ).select_related('user').order_by('-created_at')
     
     # Calculate statistics
     total_attendees = rsvps.count()
@@ -428,3 +535,127 @@ def event_attendees(request, event_slug):
         'title': f'Attendees - {event.title}'
     }
     return render(request, 'rsvp/event_attendees.html', context)
+
+
+# ==========================================
+# Helper Functions for Email Notifications
+# ==========================================
+
+def send_rsvp_confirmation_email(rsvp, request):
+    """Send confirmation email to attendee when RSVP is created"""
+    try:
+        context = {
+            'rsvp': rsvp,
+            'domain': request.get_host(),
+        }
+        
+        subject = f'Registration Confirmed - {rsvp.event.title}'
+        html_message = render_to_string(
+            'notifications/emails/rsvp_confirmed.html', 
+            context
+        )
+        plain_message = render_to_string(
+            'notifications/emails/rsvp_confirmed.txt', 
+            context
+        )
+        
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [rsvp.user.email],
+            html_message=html_message,
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f"Error sending RSVP confirmation email: {e}")
+        raise
+
+
+def send_organizer_notification_email(rsvp, request):
+    """Send notification to event organizer when someone registers"""
+    try:
+        event = rsvp.event
+        
+        # Calculate statistics
+        total_registrations = RSVP.objects.filter(
+            event=event
+        ).exclude(status='cancelled').count()
+        
+        total_tickets = RSVP.objects.filter(
+            event=event
+        ).exclude(status='cancelled').aggregate(
+            total=Sum('number_of_tickets')
+        )['total'] or 0
+        
+        booking_percentage = (total_tickets / event.total_seats * 100) if event.total_seats > 0 else 0
+        
+        # Calculate revenue for paid events
+        revenue = rsvp.number_of_tickets * float(event.ticket_price) if event.event_type == 'paid' else 0
+        total_revenue = total_tickets * float(event.ticket_price) if event.event_type == 'paid' else 0
+        
+        context = {
+            'rsvp': rsvp,
+            'event': event,
+            'organizer': event.organizer,
+            'domain': request.get_host(),
+            'total_registrations': total_registrations,
+            'total_tickets': total_tickets,
+            'booking_percentage': booking_percentage,
+            'revenue': revenue,
+            'total_revenue': total_revenue,
+        }
+        
+        subject = f'New Registration for {event.title}'
+        html_message = render_to_string(
+            'notifications/emails/new_registration_organizer.html', 
+            context
+        )
+        plain_message = render_to_string(
+            'notifications/emails/new_registration_organizer.txt', 
+            context
+        )
+        
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [event.organizer.email],
+            html_message=html_message,
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f"Error sending organizer notification email: {e}")
+        raise
+
+
+def send_rsvp_cancellation_email(rsvp, request):
+    """Send notification email when RSVP is cancelled"""
+    try:
+        context = {
+            'rsvp': rsvp,
+            'domain': request.get_host(),
+            'refund_info': rsvp.event.ticket_price > 0,
+        }
+        
+        subject = f'Registration Cancelled - {rsvp.event.title}'
+        html_message = render_to_string(
+            'notifications/emails/rsvp_cancelled.html', 
+            context
+        )
+        plain_message = render_to_string(
+            'notifications/emails/rsvp_cancelled.txt', 
+            context
+        )
+        
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [rsvp.user.email],
+            html_message=html_message,
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f"Error sending RSVP cancellation email: {e}")
+        raise

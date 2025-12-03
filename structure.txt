@@ -1,0 +1,102 @@
+event_management_system/
+│
+├── manage.py                          # Django CLI entry point
+├── requirements.txt                   # Python dependencies
+│
+├── event_system/                      # Main Django project folder
+│   ├── __init__.py
+│   ├── settings.py                    # Database, apps, middleware config
+│   ├── urls.py                        # Root URL routing
+│   ├── wsgi.py                        # WSGI server config (deployment)
+│   └── asgi.py                        # ASGI server config (async)
+│
+├── authentication/                    # Module 1: User Authentication
+│   ├── models.py                      # UserProfile (extends Django User)
+│   ├── forms.py                       # Registration, Login, Profile forms
+│   ├── views.py                       # register, login, logout, profile views
+│   ├── urls.py                        # /auth/register/, /auth/login/, etc.
+│   ├── admin.py                       # Admin panel config
+│   └── templates/authentication/      # HTML templates
+│       ├── register.html
+│       ├── login.html
+│       └── profile.html
+│
+├── events/                            # Module 2: Event Management
+│   ├── models.py                      # Event, Category models
+│   ├── forms.py                       # EventForm, CategoryForm
+│   ├── views.py                       # CRUD operations (create, list, update, delete)
+│   ├── urls.py                        # /events/, /events/create/, etc.
+│   ├── admin.py                       # Event admin panel
+│   └── templates/events/              # HTML templates
+│       ├── event_list.html
+│       ├── event_detail.html
+│       ├── event_form.html
+│       ├── event_confirm_delete.html
+│       ├── my_events.html
+│       └── category_list.html
+│
+├── rsvp/                              # Module 3: RSVP & Ticket System
+│   ├── models.py                      # RSVP model (ticket generation, QR codes)
+│   ├── forms.py                       # RSVPForm
+│   ├── views.py                       # create_rsvp, my_rsvps, download_ticket, cancel_rsvp
+│   ├── urls.py                        # /rsvp/event/<slug>/register/, /rsvp/<id>/
+│   ├── admin.py                       # RSVP admin
+│   └── templates/rsvp/                # HTML templates
+│       ├── rsvp_form.html
+│       ├── rsvp_detail.html           # Ticket view with QR code
+│       ├── my_rsvps.html
+│       ├── rsvp_cancel.html
+│       └── event_attendees.html       # Organizer sees attendees
+│
+├── checkin/                           # Module 4: Check-in System
+│   ├── models.py                      # CheckIn model (tracks attended users)
+│   ├── forms.py                       # CheckInForm (ticket number entry)
+│   ├── views.py                       # perform_checkin, checkin_list, undo_checkin
+│   ├── urls.py                        # /checkin/<slug>/perform/, etc.
+│   ├── admin.py                       # CheckIn admin
+│   └── templates/checkin/             # HTML templates
+│       ├── dashboard.html             # Check-in stats & recent activity
+│       ├── perform_checkin.html       # Manual/QR check-in form
+│       ├── checkin_list.html          # All checked-in attendees
+│       └── undo_checkin.html
+│
+├── dashboard/                         # Module 5: Dashboard & Analytics
+│   ├── views.py                       # organizer_dashboard, attendee_dashboard, analytics
+│   ├── urls.py                        # /, /analytics/
+│   └── templates/dashboard/           # HTML templates
+│       ├── organizer_dashboard.html   # Events, RSVPs, revenue stats
+│       └── attendee_dashboard.html    # Upcoming events, recommendations
+│
+├── notifications/                     # Module 6: Email Notifications
+│   ├── utils.py                       # send_event_notification, send_rsvp_notification, etc.
+│   ├── views.py                       # send_event_notification (bulk email UI)
+│   ├── urls.py                        # /notifications/event/<slug>/send/
+│   ├── models.py                      # (Optional) Notification tracking
+│   ├── admin.py
+│   └── templates/notifications/       # HTML templates
+│       └── send_notification.html     # Form to send bulk emails to attendees
+│
+├── search/                            # Module 7: Advanced Search & Filters
+│   ├── views.py                       # search_events, filter_by_category, advanced_search
+│   ├── urls.py                        # /search/, /search/advanced/
+│   └── templates/search/              # HTML templates
+│       ├── search_results.html        # Displays filtered events
+│       └── advanced_search.html       # Multi-filter form
+│
+├── templates/                         # Shared templates
+│   ├── base.html                      # Main layout (navbar, footer, messages)
+│   └── includes/
+│       ├── navbar.html                # Navigation menu
+│       └── footer.html                # Footer section
+│
+├── static/                            # Static files (CSS, JS, images)
+│   ├── css/
+│   ├── js/
+│   └── images/
+│
+├── media/                             # User-uploaded files
+│   ├── profile_pics/                  # User profile pictures
+│   ├── event_banners/                 # Event banner images
+│   └── qr_codes/                      # Generated QR codes for tickets
+│
+└── db.sqlite3 / MySQL                 # Database (configured in settings.py)

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            background-color: #2ecc71;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            background-color: white;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        .event-details {
+            background-color: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #2ecc71;
+        }
+        .event-details h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .ticket-info {
+            background-color: #e8f5e9;
+            border: 2px dashed #2ecc71;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .ticket-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+            margin: 10px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+        }
+        .info-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ Registration Confirmed!</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hi {{ rsvp.user.username }},</p>
+            
+            <p>Great news! Your registration for <strong>{{ rsvp.event.title }}</strong> has been confirmed.</p>
+            
+            <div class="ticket-info">
+                <p style="margin: 0; color: #666;">Your Ticket Number</p>
+                <div class="ticket-number">{{ rsvp.ticket_number }}</div>
+                <p style="margin: 0; color: #666; font-size: 12px;">Please save this for check-in</p>
+            </div>
+            
+            <div class="event-details">
+                <h2>{{ rsvp.event.title }}</h2>
+                <p><strong>📅 Date & Time:</strong><br>
+                   {{ rsvp.event.start_date|date:"F d, Y" }} at {{ rsvp.event.start_date|time:"g:i A" }}<br>
+                   {% if rsvp.event.end_date %}
+                   to {{ rsvp.event.end_date|date:"F d, Y" }} at {{ rsvp.event.end_date|time:"g:i A" }}
+                   {% endif %}
+                </p>
+                
+                <p><strong>📍 Venue:</strong><br>
+                   {{ rsvp.event.venue_name }}<br>
+                   {{ rsvp.event.venue_address }}<br>
+                   {{ rsvp.event.city }}, {{ rsvp.event.state }} {{ rsvp.event.zip_code }}
+                </p>
+                
+                {% if rsvp.event.ticket_price > 0 %}
+                <p><strong>💰 Ticket Price:</strong> ₹{{ rsvp.event.ticket_price }}</p>
+                {% else %}
+                <p><strong>💰 Ticket Price:</strong> FREE</p>
+                {% endif %}
+                
+                <p><strong>🎫 Number of Tickets:</strong> {{ rsvp.number_of_tickets }}</p>
+                
+                <p><strong>👤 Organized by:</strong> {{ rsvp.event.organizer.username }}</p>
+            </div>
+            
+            <div class="info-box">
+                <p><strong>📝 Important Information:</strong></p>
+                <ul style="margin: 10px 0;">
+                    <li>Please arrive 15 minutes before the event starts</li>
+                    <li>Bring your ticket number for check-in</li>
+                    <li>Check your email for any updates about the event</li>
+                    {% if rsvp.event.ticket_price > 0 %}
+                    <li>Payment confirmation has been received</li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <p><strong>Need to make changes?</strong></p>
+            <p>If you need to cancel your registration, you can do so from your dashboard. Please note that cancellation policies may apply.</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ domain }}{{ rsvp.event.get_absolute_url }}" class="button">View Event Details</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated confirmation from Event Management System.</p>
+            <p>If you have questions about this event, please contact the organizer.</p>
+            <p>{{ domain }}</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+/* Global overrides complementing Tailwind's utility classes */
+:root {
+    color-scheme: light;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+
+a:focus,
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.card {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+    padding: 1.75rem;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 20px 35px rgba(59, 130, 246, 0.35);
+}
+
+.table-modern {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-modern th {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    padding: 0.75rem 1rem;
+}
+
+.table-modern td {
+    padding: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #0f172a;
+        color: #e2e8f0;
+    }
+
+    .card {
+        background: #1e293b;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+
+    .table-modern td {
+        border-color: #334155;
+    }
+}
