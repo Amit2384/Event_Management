@@ -1,0 +1,30 @@
+Update from Event Organizer
+
+Hi {{ attendee.username }},
+
+The organizer of "{{ event.title }}" has sent you an important message:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Subject: {{ subject }}
+
+{{ message }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Event Details:
+--------------
+Title: {{ event.title }}
+Date: {{ event.start_date|date:"F d, Y" }} at {{ event.start_date|time:"g:i A" }}
+Venue: {{ event.venue_name }}
+Location: {{ event.city }}, {{ event.state }}
+{% if rsvp %}Your Ticket Number: {{ rsvp.ticket_number }}{% endif %}
+
+If you have any questions, please contact the event organizer.
+
+View event details: http://{{ domain }}{{ event.get_absolute_url }}
+
+---
+This message was sent by the event organizer: {{ event.organizer.username }}
+You're receiving this because you're registered for this event.
+{{ domain }}
